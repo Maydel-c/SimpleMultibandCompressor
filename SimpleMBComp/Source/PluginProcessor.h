@@ -171,7 +171,9 @@ private:
             HP1,    LP2,
                     HP2;
     
-    // rename crossover and add a new one
+    Filter invAP1, invAP2;
+    juce::AudioBuffer<float> invAPBuffer; // only one buffer needed because both AP filters with different cutoffs will be in series
+    
     juce::AudioParameterFloat* lowMidCrossover {nullptr};
     juce::AudioParameterFloat* midHighCrossover {nullptr};
     
