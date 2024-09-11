@@ -60,6 +60,14 @@ SimpleMBCompAudioProcessor::SimpleMBCompAudioProcessor()
     boolHelper(midBandComp.bypass, Names::Bypass_Mid_Band);
     boolHelper(highBandComp.bypass, Names::Bypass_High_Band);
     
+    boolHelper(lowBandComp.mute, Names::Mute_Low_Band);
+    boolHelper(midBandComp.mute, Names::Mute_Mid_Band);
+    boolHelper(highBandComp.mute, Names::Mute_High_Band);
+    
+    boolHelper(lowBandComp.solo, Names::Solo_Low_Band);
+    boolHelper(midBandComp.solo, Names::Solo_Mid_Band);
+    boolHelper(highBandComp.solo, Names::Solo_High_Band);
+    
     floatHelper(lowMidCrossover, Names::Low_Mid_Crossover_Freq);
     floatHelper(midHighCrossover, Names::Mid_High_Crossover_Freq);
     
@@ -72,8 +80,6 @@ SimpleMBCompAudioProcessor::SimpleMBCompAudioProcessor()
     LP2.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
     HP2.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
     
-//    invAP1.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
-//    invAP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
 }
 
 SimpleMBCompAudioProcessor::~SimpleMBCompAudioProcessor()
@@ -285,10 +291,38 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             inputBuffer.addFrom(i, 0, source, i, 0, ns); // get sequence of parameters in the function by typing buffer.addFrom
         }
     };
+    
+    auto bandsAreSoloed = false;
+    for(auto& comp : compressors)
+    {
+        if(comp.solo->get())
+        {
+            bandsAreSoloed=true;
+            break;
+        }
+    }
 
-    addFilterBand(buffer, filterBuffers[0]);
-    addFilterBand(buffer, filterBuffers[1]);
-    addFilterBand(buffer, filterBuffers[2]);
+//    addFilterBand(buffer, filterBuffers[0]);
+//    addFilterBand(buffer, filterBuffers[1]);
+//    addFilterBand(buffer, filterBuffers[2]);
+    
+    if(bandsAreSoloed)
+    {
+        for (size_t i=0; i < compressors.size(); ++i) {
+            auto& comp = compressors[i];
+            if(comp.solo->get())
+            {
+                addFilterBand(buffer, filterBuffers[i]);
+            }
+        }
+    } else {
+        for (size_t i=0; i < compressors.size(); ++i) {
+            auto& comp = compressors[i];
+            if (! comp.mute->get()) {
+                addFilterBand(buffer, filterBuffers[i]);
+            }
+        }
+    }
 }
 
 //==============================================================================
@@ -402,6 +436,26 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleMBCompAudioProcessor::
                                                     false));
     layout.add(std::make_unique<AudioParameterBool>(juce::ParameterID{params.at(Names::Bypass_High_Band), 1},
                                                     params.at(Names::Bypass_High_Band),
+                                                    false));
+    
+    layout.add(std::make_unique<AudioParameterBool>(juce::ParameterID{params.at(Names::Mute_Low_Band), 1},
+                                                    params.at(Names::Mute_Low_Band),
+                                                    false));
+    layout.add(std::make_unique<AudioParameterBool>(juce::ParameterID{params.at(Names::Mute_Mid_Band), 1},
+                                                    params.at(Names::Mute_Mid_Band),
+                                                    false));
+    layout.add(std::make_unique<AudioParameterBool>(juce::ParameterID{params.at(Names::Mute_High_Band), 1},
+                                                    params.at(Names::Mute_High_Band),
+                                                    false));
+    
+    layout.add(std::make_unique<AudioParameterBool>(juce::ParameterID{params.at(Names::Solo_Low_Band), 1},
+                                                    params.at(Names::Solo_Low_Band),
+                                                    false));
+    layout.add(std::make_unique<AudioParameterBool>(juce::ParameterID{params.at(Names::Solo_Mid_Band), 1},
+                                                    params.at(Names::Solo_Mid_Band),
+                                                    false));
+    layout.add(std::make_unique<AudioParameterBool>(juce::ParameterID{params.at(Names::Solo_High_Band), 1},
+                                                    params.at(Names::Solo_High_Band),
                                                     false));
     
     layout.add(std::make_unique<AudioParameterFloat>(juce::ParameterID{params.at(Names::Low_Mid_Crossover_Freq), 1},
