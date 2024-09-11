@@ -10,10 +10,10 @@
 
 /*
  DSP Roadmap:
- 1. figure out how to split the audio into 3 bands
- 2. create parameters to control where this split happens
- 3. prove that splitting into 3 bands produces no additional artifacts
- 4. create audio parameters for each of the 3 compressor bands. Each of these need to live on each band instance
+ 1. figure out how to split the audio into 3 bands DONE
+ 2. create parameters to control where this split happens DONE
+ 3. prove that splitting into 3 bands produces no additional artifacts DONE
+ 4. create audio parameters for each of the 3 compressor bands. Each of these need to live on each band instance 
  5. add 2 remaining compressors
  6. add input and output gain to offset changes in output level
  7. clean up anything that needs cleaning up
@@ -171,8 +171,8 @@ private:
             HP1,    LP2,
                     HP2;
     
-    Filter invAP1, invAP2;
-    juce::AudioBuffer<float> invAPBuffer; // only one buffer needed because both AP filters with different cutoffs will be in series
+//    Filter invAP1, invAP2;
+//    juce::AudioBuffer<float> invAPBuffer; // only one buffer needed because both AP filters with different cutoffs will be in series
     
     juce::AudioParameterFloat* lowMidCrossover {nullptr};
     juce::AudioParameterFloat* midHighCrossover {nullptr};
