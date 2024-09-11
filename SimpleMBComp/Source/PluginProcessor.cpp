@@ -30,23 +30,35 @@ SimpleMBCompAudioProcessor::SimpleMBCompAudioProcessor()
         jassert(param != nullptr);
     };
     
-    floatHelper(compressor.attack, Names::Attack_Low_Band);
-    floatHelper(compressor.release, Names::Release_Low_Band);
-    floatHelper(compressor.threshold, Names::Threshold_Low_Band);
+    floatHelper(lowBandComp.attack, Names::Attack_Low_Band);
+    floatHelper(lowBandComp.release, Names::Release_Low_Band);
+    floatHelper(lowBandComp.threshold, Names::Threshold_Low_Band);
+    
+    floatHelper(midBandComp.attack, Names::Attack_Mid_Band);
+    floatHelper(midBandComp.release, Names::Release_Mid_Band);
+    floatHelper(midBandComp.threshold, Names::Threshold_Mid_Band);
+    
+    floatHelper(highBandComp.attack, Names::Attack_High_Band);
+    floatHelper(highBandComp.release, Names::Release_High_Band);
+    floatHelper(highBandComp.threshold, Names::Threshold_High_Band);
     
     auto choiceHelper = [&apvts = this->apvts, &params](auto& param, const auto& paramName){
         param = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(params.at(paramName)));
         jassert(param != nullptr);
     };
     
-    choiceHelper(compressor.ratio, Names::Ratio_Low_Band);
+    choiceHelper(lowBandComp.ratio, Names::Ratio_Low_Band);
+    choiceHelper(midBandComp.ratio, Names::Ratio_Mid_Band);
+    choiceHelper(highBandComp.ratio, Names::Ratio_High_Band);
     
     auto boolHelper = [&apvts = this->apvts, &params](auto& param, const auto& paramName){
         param = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter(params.at(paramName)));
         jassert(param != nullptr);
     };
     
-    boolHelper(compressor.bypass, Names::Bypass_Low_Band);
+    boolHelper(lowBandComp.bypass, Names::Bypass_Low_Band);
+    boolHelper(midBandComp.bypass, Names::Bypass_Mid_Band);
+    boolHelper(highBandComp.bypass, Names::Bypass_High_Band);
     
     floatHelper(lowMidCrossover, Names::Low_Mid_Crossover_Freq);
     floatHelper(midHighCrossover, Names::Mid_High_Crossover_Freq);
@@ -141,7 +153,8 @@ void SimpleMBCompAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     spec.numChannels = getTotalNumOutputChannels();
     spec.sampleRate = sampleRate;
     
-    compressor.prepare(spec);
+    for(auto& compressor : compressors)
+        compressor.prepare(spec);
     
     LP1.prepare(spec);
     HP1.prepare(spec);
@@ -210,8 +223,12 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-//    compressor.updateCompressorSettings();
-//    compressor.process(buffer);
+    
+    for(auto& compressor : compressors)
+    {
+        compressor.updateCompressorSettings();
+//        compressor.process(buffer); // can't compress before filtering. Move this line to after filtering
+    }
     
     for(auto& fb : filterBuffers)
     {
@@ -248,17 +265,13 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     HP2.process(fb2Ctx);
     
-//    auto invAPBlock = juce::dsp::AudioBlock<float>(invAPBuffer);
-//    auto invAPCtx = juce::dsp::ProcessContextReplacing<float>(invAPBlock);
-//
-//    invAP1.process(invAPCtx);
-//    invAP2.process(invAPCtx);
+    for(size_t i = 0; i < filterBuffers.size(); ++i)
+    {
+        compressors[i].process(filterBuffers[i]);
+    }
     
     auto numSamples = buffer.getNumSamples();
     auto numChannels = buffer.getNumChannels();
-    
-    if(compressor.bypass->get())
-        return;
     
     // we need to clear our input before we start adding our filter buffers to it
     buffer.clear();
@@ -276,15 +289,6 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     addFilterBand(buffer, filterBuffers[0]);
     addFilterBand(buffer, filterBuffers[1]);
     addFilterBand(buffer, filterBuffers[2]);
-//
-//    if(compressor.bypass->get())
-//    {
-//        for (auto ch=0; ch < numChannels; ++ch)
-//        {
-//            juce::FloatVectorOperations::multiply(invAPBuffer.getWritePointer(ch), -1.f, numSamples);
-//        }
-//        addFilterBand(buffer, invAPBuffer);
-//    }
 }
 
 //==============================================================================
