@@ -170,8 +170,8 @@ private:
     Filter  LP1,    AP2,
             HP1,    LP2,
                     HP2;
-            
     
+    // rename crossover and add a new one
     juce::AudioParameterFloat* lowMidCrossover {nullptr};
     juce::AudioParameterFloat* midHighCrossover {nullptr};
     

@@ -240,8 +240,8 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto numSamples = buffer.getNumSamples();
     auto numChannels = buffer.getNumChannels();
     
-//    if(compressor.bypass->get())
-//        return;
+    if(compressor.bypass->get())
+        return;
     
     // we need to clear our input before we start adding our filter buffers to it
     buffer.clear();
@@ -257,8 +257,8 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     };
 
     addFilterBand(buffer, filterBuffers[0]);
-//    addFilterBand(buffer, filterBuffers[1]);
-//    addFilterBand(buffer, filterBuffers[2]);
+    addFilterBand(buffer, filterBuffers[1]);
+    addFilterBand(buffer, filterBuffers[2]);
     
 //    if(compressor.bypass->get())
 //    {
