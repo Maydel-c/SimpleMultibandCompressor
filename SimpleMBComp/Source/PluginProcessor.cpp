@@ -71,6 +71,9 @@ SimpleMBCompAudioProcessor::SimpleMBCompAudioProcessor()
     floatHelper(lowMidCrossover, Names::Low_Mid_Crossover_Freq);
     floatHelper(midHighCrossover, Names::Mid_High_Crossover_Freq);
     
+    floatHelper(inputGainParam, Names::Gain_In);
+    floatHelper(outputGainParam, Names::Gain_Out);
+    
     // set one of the filters to high pass. By default both are low pass
     LP1.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
     HP1.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
@@ -79,6 +82,8 @@ SimpleMBCompAudioProcessor::SimpleMBCompAudioProcessor()
     
     LP2.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
     HP2.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
+    
+    
     
 }
 
@@ -175,6 +180,12 @@ void SimpleMBCompAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 //
 //    invAPBuffer.setSize(spec.numChannels, samplesPerBlock);
     
+    inputGain.prepare(spec);
+    outputGain.prepare(spec);
+    
+    inputGain.setRampDurationSeconds(0.05); // 50ms
+    outputGain.setRampDurationSeconds(0.05); // 50ms
+    
     for( auto& buffer: filterBuffers)
     {
         buffer.setSize(spec.numChannels, samplesPerBlock);
@@ -214,45 +225,32 @@ bool SimpleMBCompAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 }
 #endif
 
-void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void SimpleMBCompAudioProcessor::updateState()
 {
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    
     for(auto& compressor : compressors)
     {
         compressor.updateCompressorSettings();
-//        compressor.process(buffer); // can't compress before filtering. Move this line to after filtering
     }
-    
-    for(auto& fb : filterBuffers)
-    {
-        fb = buffer;
-    }
-    
-//    invAPBuffer = buffer;
     
     auto lowMidCutoffFreq = lowMidCrossover->get();
     LP1.setCutoffFrequency(lowMidCutoffFreq);
     HP1.setCutoffFrequency(lowMidCutoffFreq);
-//    invAP1.setCutoffFrequency(lowMidCutoffFreq);
     
     auto midHighCutoffFreq = midHighCrossover->get();
     AP2.setCutoffFrequency(midHighCutoffFreq);
     LP2.setCutoffFrequency(midHighCutoffFreq);
     HP2.setCutoffFrequency(midHighCutoffFreq);
-//    invAP2.setCutoffFrequency(midHighCutoffFreq);
+    
+    inputGain.setGainDecibels(inputGainParam->get());
+    outputGain.setGainDecibels(outputGainParam->get());
+}
+
+void SimpleMBCompAudioProcessor::splitBands(const juce::AudioBuffer<float> &inputBuffer)
+{
+    for(auto& fb : filterBuffers)
+    {
+        fb = inputBuffer;
+    }
     
     auto fb0Block = juce::dsp::AudioBlock<float>(filterBuffers[0]);
     auto fb1Block = juce::dsp::AudioBlock<float>(filterBuffers[1]);
@@ -270,6 +268,22 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     LP2.process(fb1Ctx);
     
     HP2.process(fb2Ctx);
+}
+
+void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+{
+    juce::ScopedNoDenormals noDenormals;
+    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumOutputChannels = getTotalNumOutputChannels();
+
+    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+        buffer.clear (i, 0, buffer.getNumSamples());
+   
+    updateState();
+    
+    applyGain(buffer, inputGain);
+    
+    splitBands(buffer);
     
     for(size_t i = 0; i < filterBuffers.size(); ++i)
     {
@@ -302,10 +316,6 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
     }
 
-//    addFilterBand(buffer, filterBuffers[0]);
-//    addFilterBand(buffer, filterBuffers[1]);
-//    addFilterBand(buffer, filterBuffers[2]);
-    
     if(bandsAreSoloed)
     {
         for (size_t i=0; i < compressors.size(); ++i) {
@@ -323,6 +333,8 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             }
         }
     }
+    
+    applyGain(buffer, outputGain);
 }
 
 //==============================================================================
@@ -365,18 +377,30 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleMBCompAudioProcessor::
     using namespace juce;
     using namespace Params;
     const auto& params = GetParams();
-
+    
+    auto gainRange = NormalisableRange<float>(-24.f, 24.f,0.5f, 1.f);
+    
+    layout.add(std::make_unique<AudioParameterFloat>(juce::ParameterID{params.at(Names::Gain_In), 1},
+                                                     params.at(Names::Gain_In),
+                                                     gainRange,
+                                                     0.f));
+    layout.add(std::make_unique<AudioParameterFloat>(juce::ParameterID{params.at(Names::Gain_Out), 1},
+                                                     params.at(Names::Gain_Out),
+                                                     gainRange,
+                                                     0.f));
+    
+    auto thresholdRange = NormalisableRange<float>(-60, 12, 1, 1);
     layout.add(std::make_unique<AudioParameterFloat>(juce::ParameterID{params.at(Names::Threshold_Low_Band), 1},
                                                      params.at(Names::Threshold_Low_Band),
-                                                     NormalisableRange<float>(-60, 12, 1, 1),
+                                                     thresholdRange,
                                                      0));
     layout.add(std::make_unique<AudioParameterFloat>(juce::ParameterID{params.at(Names::Threshold_Mid_Band), 1},
                                                      params.at(Names::Threshold_Mid_Band),
-                                                     NormalisableRange<float>(-60, 12, 1, 1),
+                                                     thresholdRange,
                                                      0));
     layout.add(std::make_unique<AudioParameterFloat>(juce::ParameterID{params.at(Names::Threshold_High_Band), 1},
                                                      params.at(Names::Threshold_High_Band),
-                                                     NormalisableRange<float>(-60, 12, 1, 1),
+                                                     thresholdRange,
                                                      0));
 
     auto attackReleaseRange = NormalisableRange<float>(5, 500, 1, 1);
@@ -462,7 +486,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleMBCompAudioProcessor::
                                                      params.at(Names::Low_Mid_Crossover_Freq),
                                                      NormalisableRange<float>(20, 999, 1, 1),
                                                      400));
-    
     layout.add(std::make_unique<AudioParameterFloat>(juce::ParameterID{params.at(Names::Mid_High_Crossover_Freq), 1},
                                                      params.at(Names::Mid_High_Crossover_Freq),
                                                      NormalisableRange<float>(1000, 20000, 1, 1),
