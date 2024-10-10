@@ -1,6 +1,7 @@
 **/Builds
 **/JuceLibraryCode
 **/.DS_Store
+**/Testbed.filtergraph
 
 # Prerequisites
 *.d
@@ -34,3 +35,5 @@
 *.exe
 *.out
 *.app
+**/SimpleMBComp Testbed.filtergraph
+*.filtergraph
