@@ -99,9 +99,20 @@ struct Placeholder : juce::Component
     juce::Colour customColor;
 };
 
+struct RotarySlider : juce::Slider
+{
+    RotarySlider() : juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
+                                  juce::Slider::TextEntryBoxPosition::NoTextBox)
+    { }
+};
+
 struct GlobalControls : juce::Component
 {
-    void paint(juce::Graphics& g);
+    GlobalControls();
+    void paint(juce::Graphics& g) override;
+    void resized() override;
+private:
+    RotarySlider inGainSlider, lowMidXoverSlider, midHighXoverSlider, outGainSlider;
 };
 
 /**

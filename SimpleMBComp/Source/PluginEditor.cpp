@@ -263,6 +263,14 @@ Placeholder::Placeholder()
 }
 //==============================================================================
 
+GlobalControls::GlobalControls()
+{
+    addAndMakeVisible(inGainSlider);
+    addAndMakeVisible(lowMidXoverSlider);
+    addAndMakeVisible(midHighXoverSlider);
+    addAndMakeVisible(outGainSlider);
+}
+
 void GlobalControls::paint(juce::Graphics &g)
 {
     using namespace juce;
@@ -277,6 +285,23 @@ void GlobalControls::paint(juce::Graphics &g)
     g.fillRoundedRectangle(bounds.toFloat(), 3);
     
     g.drawRect(localBounds); // outermost rect. Adds space b/w components
+}
+
+void GlobalControls::resized()
+{
+    using namespace juce;
+    auto bounds = getLocalBounds();
+    
+    FlexBox flexbox;
+    flexbox.flexDirection = FlexBox::Direction::row;
+    flexbox.flexWrap = FlexBox::Wrap::noWrap;
+    
+    flexbox.items.add(FlexItem(inGainSlider).withFlex(1.f));
+    flexbox.items.add(FlexItem(lowMidXoverSlider).withFlex(1.f));
+    flexbox.items.add(FlexItem(midHighXoverSlider).withFlex(1.f));
+    flexbox.items.add(FlexItem(outGainSlider).withFlex(1.f));
+    
+    flexbox.performLayout(bounds);    
 }
 
 //==============================================================================
