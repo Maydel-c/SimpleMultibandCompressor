@@ -22,8 +22,8 @@ struct LookAndFeel : juce::LookAndFeel_V4
                            float rotaryEndAngle,
                            juce::Slider&) override;
     
-    void drawToggleButton (juce::Graphics &,
-                           juce::ToggleButton &,
+    void drawToggleButton (juce::Graphics &g,
+                           juce::ToggleButton &toggleButton,
                            bool shouldDrawButtonAsHighlighted,
                            bool shouldDrawButtonAsDown) override;
     
@@ -91,7 +91,7 @@ struct Placeholder : juce::Component
     
     Placeholder();
     
-    void paint(juce::Graphics& g)
+    void paint(juce::Graphics& g) override
     {
         g.fillAll(customColor);
     }
@@ -106,13 +106,37 @@ struct RotarySlider : juce::Slider
     { }
 };
 
+template<
+    typename Attachment,
+    typename APVTS,
+    typename Params,
+    typename ParamName,
+    typename SliderType
+>
+void makeAttachment(std::unique_ptr<Attachment>& attachment,
+                    APVTS& apvts,
+                    const Params& params,
+                    const ParamName& name,
+                    SliderType& slider)
+{
+    attachment = std::make_unique<Attachment>(apvts, params.at(name), slider);
+}
+
 struct GlobalControls : juce::Component
 {
-    GlobalControls();
+    GlobalControls(juce::AudioProcessorValueTreeState& apvts);
     void paint(juce::Graphics& g) override;
     void resized() override;
 private:
     RotarySlider inGainSlider, lowMidXoverSlider, midHighXoverSlider, outGainSlider;
+    
+    // preparing allocating these sliders on the heap. Now declaring a unique_ptr to the attachment and create one attachment per slider
+    using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    std::unique_ptr<Attachment> inGainSliderAttachment,
+                                lowMidXoverSliderAttachment,
+                                midHighXoverSliderAttachment,
+                                outGainSliderAttachment;
+    
 };
 
 /**
@@ -133,7 +157,7 @@ private:
     SimpleMBCompAudioProcessor& audioProcessor;
     
     Placeholder controlBar, analyzer, /* globalControls, */ bandControls;
-    GlobalControls globalControls;
+    GlobalControls globalControls {audioProcessor.apvts};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleMBCompAudioProcessorEditor)
 };
