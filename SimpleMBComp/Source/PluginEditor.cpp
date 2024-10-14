@@ -9,6 +9,21 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+juce::String getValString(juce::RangedAudioParameter& param,
+                          bool getLow,
+                          juce::String suffix)
+{
+    juce::String str;
+    
+    // getting parameter min and max value from parameter range
+    
+    auto val = getLow ? param.getNormalisableRange().start : param.getNormalisableRange().end;
+    
+    str << suffix;
+    
+    return str;
+}
+
 void LookAndFeel::drawRotarySlider(juce::Graphics & g,
                                    int x,
                                    int y,
@@ -316,16 +331,23 @@ void GlobalControls::paint(juce::Graphics &g)
 void GlobalControls::resized()
 {
     using namespace juce;
-    auto bounds = getLocalBounds();
+    auto bounds = getLocalBounds().reduced(5);
     
     FlexBox flexBox;
     flexBox.flexDirection = FlexBox::Direction::row;
     flexBox.flexWrap = FlexBox::Wrap::noWrap;
     
+    auto spacer = FlexItem().withWidth(4); // between each item
+    auto endCap = FlexItem().withWidth(6); // space at ends of array
+    flexBox.items.add(endCap);
     flexBox.items.add(FlexItem(*inGainSlider).withFlex(1.f));
+    flexBox.items.add(spacer);
     flexBox.items.add(FlexItem(*lowMidXoverSlider).withFlex(1.f));
+    flexBox.items.add(spacer);
     flexBox.items.add(FlexItem(*midHighXoverSlider).withFlex(1.f));
+    flexBox.items.add(spacer);
     flexBox.items.add(FlexItem(*outGainSlider).withFlex(1.f));
+    flexBox.items.add(endCap);
     
     flexBox.performLayout(bounds);
 }
