@@ -135,7 +135,7 @@ juce::RangedAudioParameter& getParam(APVTS& apvts, const Params& params, const N
     return *param; // cause the calling function needs a reference, we will dereference it here
 }
 
-juce::String getValString(juce::RangedAudioParameter& param, // getting value from parameters
+juce::String getValString(const juce::RangedAudioParameter& param, // getting value from parameters
                           bool getLow,
                           juce::String suffix);
 

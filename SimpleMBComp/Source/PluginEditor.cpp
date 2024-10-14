@@ -9,7 +9,18 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-juce::String getValString(juce::RangedAudioParameter& param,
+template<typename T>
+bool truncateKiloValue(T& value) // returns true if trucation performed
+{
+    if(value > static_cast<T>(999))
+    {
+        value /= static_cast<T>(1000);
+        return true;
+    }
+    return false;
+}
+
+juce::String getValString(const juce::RangedAudioParameter& param,
                           bool getLow,
                           juce::String suffix)
 {
@@ -19,6 +30,12 @@ juce::String getValString(juce::RangedAudioParameter& param,
     
     auto val = getLow ? param.getNormalisableRange().start : param.getNormalisableRange().end;
     
+    bool useK = truncateKiloValue(val);
+    str << val;
+    
+    if(useK)
+        str << "k";
+
     str << suffix;
     
     return str;
@@ -245,11 +262,12 @@ juce::String RotarySliderWithLabels::getDisplayString() const
     if( auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param) )
     {
         float val = getValue();
-        if( val > 999.f )
-        {
-            val /= 1000.f;
-            addK = true;
-        }
+//        if( val > 999.f )
+//        {
+//            val /= 1000.f;
+//            addK = true;
+//        }
+        addK = truncateKiloValue(val);
 
         str = juce::String(val, (addK ? 2 : 0));
 
@@ -305,6 +323,18 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
     makeAttachmentHelper(midHighXoverSliderAttachment, Names::Mid_High_Crossover_Freq, *midHighXoverSlider);
     makeAttachmentHelper(outGainSliderAttachment, Names::Gain_Out, *outGainSlider);
     
+    addLabelPairs(inGainSlider->labels,
+                  getParamHelper(Names::Gain_In),
+                  "dB");
+    addLabelPairs(lowMidXoverSlider->labels,
+                  getParamHelper(Names::Low_Mid_Crossover_Freq),
+                  "Hz");
+    addLabelPairs(midHighXoverSlider->labels,
+                  getParamHelper(Names::Mid_High_Crossover_Freq),
+                  "Hz");
+    addLabelPairs(outGainSlider->labels,
+                  getParamHelper(Names::Gain_Out),
+                  "dB");
     
     addAndMakeVisible(*inGainSlider);
     addAndMakeVisible(*lowMidXoverSlider);
