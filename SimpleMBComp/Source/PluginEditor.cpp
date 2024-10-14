@@ -268,6 +268,16 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
     using namespace Params;
     const auto& params = GetParams();
     
+    auto getParamHelper = [&params, &apvts](const auto& name) -> auto&
+    {
+        return getParam(apvts, params, name);
+    };
+    
+    inGainSlider = std::make_unique<RSWL>(getParamHelper(Names::Gain_In), "dB");
+    lowMidXoverSlider = std::make_unique<RSWL>(getParamHelper(Names::Low_Mid_Crossover_Freq), "Hz");
+    midHighXoverSlider = std::make_unique<RSWL>(getParamHelper(Names::Mid_High_Crossover_Freq), "Hz");
+    outGainSlider = std::make_unique<RSWL>(getParamHelper(Names::Gain_Out), "dB");
+    
     auto makeAttachmentHelper = [&params, &apvts](auto& attachment,
                                                   const auto& name,
                                                   auto& slider)
@@ -275,16 +285,16 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
         makeAttachment(attachment, apvts, params, name, slider);
     };
     
-    makeAttachmentHelper(inGainSliderAttachment, Names::Gain_In, inGainSlider);
-    makeAttachmentHelper(lowMidXoverSliderAttachment, Names::Low_Mid_Crossover_Freq, lowMidXoverSlider);
-    makeAttachmentHelper(midHighXoverSliderAttachment, Names::Mid_High_Crossover_Freq, midHighXoverSlider);
-    makeAttachmentHelper(outGainSliderAttachment, Names::Gain_Out, outGainSlider);
+    makeAttachmentHelper(inGainSliderAttachment, Names::Gain_In, *inGainSlider);
+    makeAttachmentHelper(lowMidXoverSliderAttachment, Names::Low_Mid_Crossover_Freq, *lowMidXoverSlider);
+    makeAttachmentHelper(midHighXoverSliderAttachment, Names::Mid_High_Crossover_Freq, *midHighXoverSlider);
+    makeAttachmentHelper(outGainSliderAttachment, Names::Gain_Out, *outGainSlider);
     
     
-    addAndMakeVisible(inGainSlider);
-    addAndMakeVisible(lowMidXoverSlider);
-    addAndMakeVisible(midHighXoverSlider);
-    addAndMakeVisible(outGainSlider);
+    addAndMakeVisible(*inGainSlider);
+    addAndMakeVisible(*lowMidXoverSlider);
+    addAndMakeVisible(*midHighXoverSlider);
+    addAndMakeVisible(*outGainSlider);
 }
 
 void GlobalControls::paint(juce::Graphics &g)
@@ -312,10 +322,10 @@ void GlobalControls::resized()
     flexBox.flexDirection = FlexBox::Direction::row;
     flexBox.flexWrap = FlexBox::Wrap::noWrap;
     
-    flexBox.items.add(FlexItem(inGainSlider).withFlex(1.f));
-    flexBox.items.add(FlexItem(lowMidXoverSlider).withFlex(1.f));
-    flexBox.items.add(FlexItem(midHighXoverSlider).withFlex(1.f));
-    flexBox.items.add(FlexItem(outGainSlider).withFlex(1.f));
+    flexBox.items.add(FlexItem(*inGainSlider).withFlex(1.f));
+    flexBox.items.add(FlexItem(*lowMidXoverSlider).withFlex(1.f));
+    flexBox.items.add(FlexItem(*midHighXoverSlider).withFlex(1.f));
+    flexBox.items.add(FlexItem(*outGainSlider).withFlex(1.f));
     
     flexBox.performLayout(bounds);
 }

@@ -122,13 +122,27 @@ void makeAttachment(std::unique_ptr<Attachment>& attachment,
     attachment = std::make_unique<Attachment>(apvts, params.at(name), slider);
 }
 
+template<
+    typename APVTS,
+    typename Params,
+    typename Name
+    >
+juce::RangedAudioParameter& getParam(APVTS& apvts, const Params& params, const Name& name)
+{
+    auto param = apvts.getParameter(params.at(name));
+    jassert( param != nullptr ); // when parameter not found
+    
+    return *param; // cause the calling function needs a reference, we will dereference it here
+}
+
 struct GlobalControls : juce::Component
 {
     GlobalControls(juce::AudioProcessorValueTreeState& apvts);
     void paint(juce::Graphics& g) override;
     void resized() override;
 private:
-    RotarySlider inGainSlider, lowMidXoverSlider, midHighXoverSlider, outGainSlider;
+    using RSWL = RotarySliderWithLabels;
+    std::unique_ptr<RSWL> inGainSlider, lowMidXoverSlider, midHighXoverSlider, outGainSlider;
     
     // preparing allocating these sliders on the heap. Now declaring a unique_ptr to the attachment and create one attachment per slider
     using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
