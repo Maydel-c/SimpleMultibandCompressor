@@ -194,6 +194,14 @@ void RotarySliderWithLabels::paint(juce::Graphics &g)
     auto range = getRange();
     
     auto sliderBounds = getSliderbounds();
+    
+    auto bounds = getLocalBounds();
+    
+    g.setColour(Colours::blueviolet);
+    g.drawFittedText(getName(),
+                     bounds.removeFromTop(getTextHeight() + 2),
+                     Justification::centredBottom,
+                     1);
  
     getLookAndFeel().drawRotarySlider(g,
                                       sliderBounds.getX(),
