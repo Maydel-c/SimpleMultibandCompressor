@@ -181,6 +181,21 @@ void LookAndFeel::drawToggleButton(juce::Graphics &g,
         
         g.strokePath(analyzerButton->randomPath, PathStrokeType(1.f));
     }
+    else
+    {
+        auto bounds = toggleButton.getLocalBounds().reduced(2);
+        auto buttonIsOn = toggleButton.getToggleState();
+        const int cornerSize = 4;
+        
+        g.setColour(buttonIsOn ? juce::Colours::white : juce::Colours::black);
+        g.fillRoundedRectangle(bounds.toFloat(), cornerSize);
+        
+        g.setColour(buttonIsOn ? juce::Colours::black : juce::Colours::white);
+        g.drawRoundedRectangle(bounds.toFloat(), cornerSize, 1);
+        
+        g.drawFittedText(toggleButton.getName(), bounds, Justification::centred, 1);
+        
+    }
 }
 
 //==============================================================================
@@ -388,12 +403,35 @@ ratioSlider(nullptr, ""/*, "RATIO"*/) // we are getting the 3rd parameter in thi
     addAndMakeVisible(bypassButton);
     addAndMakeVisible(soloButton);
     addAndMakeVisible(muteButton);
+    
+    makeAttachmentHelper(bypassButtonAttachment, Names::Bypass_Mid_Band, bypassButton);
+    makeAttachmentHelper(soloButtonAttachment, Names::Solo_Mid_Band, soloButton);
+    makeAttachmentHelper(muteButtonAttachment, Names::Mute_Mid_Band, muteButton);
 }
 
 void CompressorBandControls::resized()
 {
     using namespace juce;
     auto bounds = getLocalBounds().reduced(5);
+    
+    auto createBandButtonControlBox = [](std::vector<Component*> comps)
+    {
+        FlexBox flexBox;
+        flexBox.flexDirection = FlexBox::Direction::column;
+        flexBox.flexWrap = FlexBox::Wrap::noWrap;
+        
+        auto spacer = FlexItem().withHeight(2);
+        
+        for (auto* comp : comps) {
+            flexBox.items.add(spacer);
+            flexBox.items.add(FlexItem(*comp).withFlex(1.f));
+        }
+        flexBox.items.add(spacer);
+        
+        return flexBox;
+    };
+    
+    auto bandButtonControlBox = createBandButtonControlBox({&bypassButton, &soloButton, &muteButton});
     
     FlexBox flexBox;
     flexBox.flexDirection = FlexBox::Direction::row;
@@ -409,7 +447,10 @@ void CompressorBandControls::resized()
     flexBox.items.add(FlexItem(thresholdSlider).withFlex(1.f));
     flexBox.items.add(spacer);
     flexBox.items.add(FlexItem(ratioSlider).withFlex(1.f));
-    flexBox.items.add(endCap);
+//    flexBox.items.add(endCap);
+    flexBox.items.add(spacer);
+
+    flexBox.items.add(FlexItem(bandButtonControlBox).withWidth(30));
     
     flexBox.performLayout(bounds);
 }
