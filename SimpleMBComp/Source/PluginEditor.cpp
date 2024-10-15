@@ -308,8 +308,30 @@ Placeholder::Placeholder()
 }
 //==============================================================================
 
-CompressorBandControls::CompressorBandControls()
+CompressorBandControls::CompressorBandControls(juce::AudioProcessorValueTreeState& apvts)
 {
+    
+    using namespace Params;
+    const auto& params = GetParams();
+    
+    auto getParamHelper = [&params, &apvts](const auto& name) -> auto&
+    {
+        return getParam(apvts, params, name);
+    };
+    
+    
+    auto makeAttachmentHelper = [&params, &apvts](auto& attachment,
+                                                  const auto& name,
+                                                  auto& slider)
+    {
+        makeAttachment(attachment, apvts, params, name, slider);
+    };
+    
+    makeAttachmentHelper(attackSliderAttachment, Names::Attack_Mid_Band, attackSlider);
+    makeAttachmentHelper(releaseSliderAttachment, Names::Release_Mid_Band, releaseSlider);
+    makeAttachmentHelper(thresholdSliderAttachment, Names::Threshold_Mid_Band, thresholdSlider);
+    makeAttachmentHelper(ratioSliderAttachment, Names::Ratio_Mid_Band, ratioSlider);
+    
     addAndMakeVisible(attackSlider);
     addAndMakeVisible(releaseSlider);
     addAndMakeVisible(thresholdSlider);
@@ -359,18 +381,7 @@ void drawModuleBackground(juce::Graphics& g,
 
 void CompressorBandControls::paint(juce::Graphics &g)
 {
-//    using namespace juce;
     auto bounds = getLocalBounds();
-//    g.setColour(Colours::blueviolet);
-//    g.fillAll();
-//
-//    auto localBounds = bounds;
-//
-//    bounds.reduce(3, 3);
-//    g.setColour(Colours::black);
-//    g.fillRoundedRectangle(bounds.toFloat(), 3);
-//
-//    g.drawRect(localBounds); // outermost rect. Adds space b/w components
     drawModuleBackground(g, bounds);
 }
 
@@ -436,18 +447,7 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
 
 void GlobalControls::paint(juce::Graphics &g)
 {
-//    using namespace juce;
     auto bounds = getLocalBounds();
-//    g.setColour(Colours::blueviolet);
-//    g.fillAll();
-//
-//    auto localBounds = bounds;
-//
-//    bounds.reduce(3, 3);
-//    g.setColour(Colours::black);
-//    g.fillRoundedRectangle(bounds.toFloat(), 3);
-//
-//    g.drawRect(localBounds); // outermost rect. Adds space b/w components
     drawModuleBackground(g, bounds);
 }
 
