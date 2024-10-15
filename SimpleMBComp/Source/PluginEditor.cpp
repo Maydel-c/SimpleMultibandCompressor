@@ -407,6 +407,18 @@ ratioSlider(nullptr, ""/*, "RATIO"*/) // we are getting the 3rd parameter in thi
     makeAttachmentHelper(bypassButtonAttachment, Names::Bypass_Mid_Band, bypassButton);
     makeAttachmentHelper(soloButtonAttachment, Names::Solo_Mid_Band, soloButton);
     makeAttachmentHelper(muteButtonAttachment, Names::Mute_Mid_Band, muteButton);
+    
+    lowBand.setName("Low");
+    midBand.setName("Mid");
+    highBand.setName("High");
+    
+    lowBand.setRadioGroupId(1);
+    midBand.setRadioGroupId(1);
+    highBand.setRadioGroupId(1);
+    
+    addAndMakeVisible(lowBand);
+    addAndMakeVisible(midBand);
+    addAndMakeVisible(highBand);
 }
 
 void CompressorBandControls::resized()
@@ -432,6 +444,7 @@ void CompressorBandControls::resized()
     };
     
     auto bandButtonControlBox = createBandButtonControlBox({&bypassButton, &soloButton, &muteButton});
+    auto bandSelectControlBox = createBandButtonControlBox({&lowBand, &midBand, &highBand});
     
     FlexBox flexBox;
     flexBox.flexDirection = FlexBox::Direction::row;
@@ -439,7 +452,10 @@ void CompressorBandControls::resized()
     
     auto spacer = FlexItem().withWidth(4); // between each item
     auto endCap = FlexItem().withWidth(6); // space at ends of array
-    flexBox.items.add(endCap);
+//    flexBox.items.add(endCap);
+    flexBox.items.add(spacer);
+    flexBox.items.add(FlexItem(bandSelectControlBox).withWidth(50));
+    flexBox.items.add(spacer);
     flexBox.items.add(FlexItem(attackSlider).withFlex(1.f));
     flexBox.items.add(spacer);
     flexBox.items.add(FlexItem(releaseSlider).withFlex(1.f));
