@@ -380,6 +380,14 @@ ratioSlider(nullptr, ""/*, "RATIO"*/) // we are getting the 3rd parameter in thi
     addAndMakeVisible(releaseSlider);
     addAndMakeVisible(thresholdSlider);
     addAndMakeVisible(ratioSlider);
+    
+    bypassButton.setName("X");
+    soloButton.setName("S");
+    muteButton.setName("M");
+    
+    addAndMakeVisible(bypassButton);
+    addAndMakeVisible(soloButton);
+    addAndMakeVisible(muteButton);
 }
 
 void CompressorBandControls::resized()

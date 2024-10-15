@@ -183,6 +183,8 @@ private:
                                 releaseSliderAttachment,
                                 thresholdSliderAttachment,
                                 ratioSliderAttachment;
+    
+    juce::ToggleButton bypassButton, soloButton, muteButton;
 };
 
 
