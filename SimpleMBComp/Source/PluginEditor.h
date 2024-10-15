@@ -58,13 +58,20 @@ struct RotarySliderWithLabels : juce::Slider
     void paint(juce::Graphics& g) override;
     juce::Rectangle<int> getSliderbounds() const;
     int getTextHeight() const { return 14; }
-    juce::String getDisplayString() const;
+    virtual juce::String getDisplayString() const;
     
     void changeParam(juce::RangedAudioParameter* p);
-private:
-//    LookAndFeel lnf;
+protected:
     juce::RangedAudioParameter* param;
     juce::String suffix;
+};
+
+struct RatioSlider : RotarySliderWithLabels
+{
+    RatioSlider(juce::RangedAudioParameter* rap,
+                const juce::String& unitSuffix) : RotarySliderWithLabels(rap, unitSuffix, "RATIO") {}
+    
+    juce::String getDisplayString() const override;
 };
 
 struct PowerButton : juce::ToggleButton { };
@@ -167,8 +174,9 @@ private:
     
     RotarySliderWithLabels attackSlider,
                 releaseSlider,
-                thresholdSlider,
-                ratioSlider;
+                thresholdSlider
+                /*ratioSlider*/;
+    RatioSlider ratioSlider;
     
     using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
     std::unique_ptr<Attachment> attackSliderAttachment,
