@@ -245,16 +245,20 @@ void RotarySliderWithLabels::paint(juce::Graphics &g)
 juce::Rectangle<int> RotarySliderWithLabels::getSliderbounds() const
 {
     auto bounds = getLocalBounds();
+    
+    bounds.removeFromTop(getTextHeight() * 1.5);
+    
     auto size = juce::jmin(bounds.getWidth(), bounds.getHeight());
     
     // making space for text - shrink size even further based on text size
-    size -= getTextHeight() * 2;
+    size -= getTextHeight() * 1.5;
     
     // creating and positioning a rectangle at top centre of component
     juce::Rectangle<int> r;
     r.setSize(size, size);
     r.setCentre(bounds.getCentreX(), 0);
-    r.setY(2); // 2 pixels from top
+//    r.setY(2); // 2 pixels from top
+    r.setY(bounds.getY());
     
     return r;
 }
@@ -319,10 +323,18 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
     auto& midHighParam = getParamHelper(Names::Mid_High_Crossover_Freq);
     auto& gainOutParam = getParamHelper(Names::Gain_Out);
     
-    inGainSlider = std::make_unique<RSWL>(gainInParam, "dB");
-    lowMidXoverSlider = std::make_unique<RSWL>(lowMidParam, "Hz");
-    midHighXoverSlider = std::make_unique<RSWL>(midHighParam, "Hz");
-    outGainSlider = std::make_unique<RSWL>(gainOutParam, "dB");
+    inGainSlider = std::make_unique<RSWL>(gainInParam,
+                                          "dB",
+                                          "INPUT TRIM");
+    lowMidXoverSlider = std::make_unique<RSWL>(lowMidParam,
+                                               "Hz",
+                                               "LOW-MID X-OVER");
+    midHighXoverSlider = std::make_unique<RSWL>(midHighParam,
+                                                "Hz",
+                                                "MID-HI X-OVER");
+    outGainSlider = std::make_unique<RSWL>(gainOutParam,
+                                           "dB",
+                                           "OUTPUT TRIM");
     
     auto makeAttachmentHelper = [&params, &apvts](auto& attachment,
                                                   const auto& name,
