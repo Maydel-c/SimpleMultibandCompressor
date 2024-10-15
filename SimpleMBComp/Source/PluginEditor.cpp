@@ -308,6 +308,55 @@ Placeholder::Placeholder()
 }
 //==============================================================================
 
+CompressorBandControls::CompressorBandControls()
+{
+    addAndMakeVisible(attackSlider);
+    addAndMakeVisible(releaseSlider);
+    addAndMakeVisible(thresholdSlider);
+    addAndMakeVisible(ratioSlider);
+}
+
+void CompressorBandControls::resized()
+{
+    using namespace juce;
+    auto bounds = getLocalBounds().reduced(5);
+    
+    FlexBox flexBox;
+    flexBox.flexDirection = FlexBox::Direction::row;
+    flexBox.flexWrap = FlexBox::Wrap::noWrap;
+    
+    auto spacer = FlexItem().withWidth(4); // between each item
+    auto endCap = FlexItem().withWidth(6); // space at ends of array
+    flexBox.items.add(endCap);
+    flexBox.items.add(FlexItem(attackSlider).withFlex(1.f));
+    flexBox.items.add(spacer);
+    flexBox.items.add(FlexItem(releaseSlider).withFlex(1.f));
+    flexBox.items.add(spacer);
+    flexBox.items.add(FlexItem(thresholdSlider).withFlex(1.f));
+    flexBox.items.add(spacer);
+    flexBox.items.add(FlexItem(ratioSlider).withFlex(1.f));
+    flexBox.items.add(endCap);
+    
+    flexBox.performLayout(bounds);
+}
+
+void CompressorBandControls::paint(juce::Graphics &g)
+{
+    using namespace juce;
+    auto bounds = getLocalBounds();
+    g.setColour(Colours::blueviolet);
+    g.fillAll();
+    
+    auto localBounds = bounds;
+    
+    bounds.reduce(3, 3);
+    g.setColour(Colours::black);
+    g.fillRoundedRectangle(bounds.toFloat(), 3);
+    
+    g.drawRect(localBounds); // outermost rect. Adds space b/w components
+}
+
+//==============================================================================
 GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
 {
     using namespace Params;
@@ -415,7 +464,7 @@ SimpleMBCompAudioProcessorEditor::SimpleMBCompAudioProcessorEditor (SimpleMBComp
 //    addAndMakeVisible(controlBar);
 //    addAndMakeVisible(analyzer);
     addAndMakeVisible(globalControls);
-//    addAndMakeVisible(bandControls);
+    addAndMakeVisible(bandControls);
     
     setSize (650, 540);
 }
