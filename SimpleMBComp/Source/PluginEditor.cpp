@@ -416,6 +416,22 @@ ratioSlider(nullptr, ""/*, "RATIO"*/) // we are getting the 3rd parameter in thi
     midBand.setRadioGroupId(1);
     highBand.setRadioGroupId(1);
     
+    auto buttonSwitcher = [safePtr = this->safePtr]()
+    {
+        if( auto* c = safePtr.getComponent())
+        {
+            c->updateAttachments();
+        }
+    };
+    
+    lowBand.onClick = buttonSwitcher;
+    midBand.onClick = buttonSwitcher;
+    highBand.onClick = buttonSwitcher;
+    
+    lowBand.setToggleState(true, juce::NotificationType::dontSendNotification);
+    
+    updateAttachments();
+    
     addAndMakeVisible(lowBand);
     addAndMakeVisible(midBand);
     addAndMakeVisible(highBand);
@@ -492,6 +508,101 @@ void CompressorBandControls::paint(juce::Graphics &g)
 {
     auto bounds = getLocalBounds();
     drawModuleBackground(g, bounds);
+}
+
+void CompressorBandControls::updateAttachments()
+{
+    enum BandType
+    {
+        Low,
+        Mid,
+        High
+    };
+    
+    BandType bandType = [this]()
+    {
+        if(lowBand.getToggleState())
+            return BandType::Low;
+        if (midBand.getToggleState())
+            return BandType::Mid;
+        else
+            return BandType::High;
+    }();
+ 
+    using namespace Params;
+    std::vector<Names> names;
+    
+    switch (bandType) {
+        
+        case Low:
+        {
+            names = std::vector<Names>
+            {
+                Names::Attack_Low_Band,
+                Names::Release_Low_Band,
+                Names::Threshold_Low_Band,
+                Names::Ratio_Low_Band,
+                Names::Solo_Low_Band,
+                Names::Mute_Low_Band,
+                Names::Bypass_Low_Band
+            };
+            break;
+        }
+        case Mid:
+        {
+            names = std::vector<Names>
+            {
+                Names::Attack_Mid_Band,
+                Names::Release_Mid_Band,
+                Names::Threshold_Mid_Band,
+                Names::Ratio_Mid_Band,
+                Names::Solo_Mid_Band,
+                Names::Mute_Mid_Band,
+                Names::Bypass_Mid_Band
+            };
+            break;
+        }
+        case High:
+        {
+            names = std::vector<Names>
+            {
+                Names::Attack_High_Band,
+                Names::Release_High_Band,
+                Names::Threshold_High_Band,
+                Names::Ratio_High_Band,
+                Names::Solo_High_Band,
+                Names::Mute_High_Band,
+                Names::Bypass_High_Band
+            };
+            break;
+        }
+    }
+    
+    enum Pos
+    {
+        Attack,
+        Release,
+        Threshold,
+        Ratio,
+        Mute,
+        Solo,
+        Bypass
+    };
+    
+    const auto& params = GetParams();
+    
+    auto getParamHelper = [&params, &apvts = this->apvts, &names](const auto& pos) -> auto&
+    {
+        return getParam(apvts, params, names.at(pos));
+    };
+    
+    attackSliderAttachment.reset();
+    releaseSliderAttachment.reset();
+    thresholdSliderAttachment.reset();
+    ratioSliderAttachment.reset();
+    bypassButtonAttachment.reset();
+    soloButtonAttachment.reset();
+    muteButtonAttachment.reset();    
 }
 
 //==============================================================================
