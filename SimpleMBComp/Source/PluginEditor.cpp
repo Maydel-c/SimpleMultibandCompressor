@@ -299,6 +299,12 @@ juce::String RotarySliderWithLabels::getDisplayString() const
     return str;
 }
 
+void RotarySliderWithLabels::changeParam(juce::RangedAudioParameter *p)
+{
+    param = p;
+    repaint();
+}
+
 //==============================================================================
 
 Placeholder::Placeholder()
@@ -308,19 +314,30 @@ Placeholder::Placeholder()
 }
 //==============================================================================
 
-CompressorBandControls::CompressorBandControls(juce::AudioProcessorValueTreeState& apvts)
+CompressorBandControls::CompressorBandControls(juce::AudioProcessorValueTreeState& apv) :
+apvts(apv),
+attackSlider(nullptr, "ms", "ATTACK"),
+releaseSlider(nullptr, "ms", "RELEASE"),
+thresholdSlider(nullptr, "dB", "THRESH"),
+ratioSlider(nullptr, "", "RATIO")
 {
     
     using namespace Params;
     const auto& params = GetParams();
     
-    auto getParamHelper = [&params, &apvts](const auto& name) -> auto&
+    auto getParamHelper = [&params, &apvts = this->apvts](const auto& name) -> auto&
     {
         return getParam(apvts, params, name);
     };
     
+    // unlike GC, here we need reference because the function returns a reference. so '&' is added
+    attackSlider.changeParam(&getParamHelper(Names::Attack_Mid_Band));
+    releaseSlider.changeParam(&getParamHelper(Names::Release_Mid_Band));
+    thresholdSlider.changeParam(&getParamHelper(Names::Threshold_Mid_Band));
+    ratioSlider.changeParam(&getParamHelper(Names::Ratio_Mid_Band));
     
-    auto makeAttachmentHelper = [&params, &apvts](auto& attachment,
+    
+    auto makeAttachmentHelper = [&params, &apvts = this->apvts](auto& attachment,
                                                   const auto& name,
                                                   auto& slider)
     {
