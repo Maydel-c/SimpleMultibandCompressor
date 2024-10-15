@@ -306,10 +306,15 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
         return getParam(apvts, params, name);
     };
     
-    inGainSlider = std::make_unique<RSWL>(getParamHelper(Names::Gain_In), "dB");
-    lowMidXoverSlider = std::make_unique<RSWL>(getParamHelper(Names::Low_Mid_Crossover_Freq), "Hz");
-    midHighXoverSlider = std::make_unique<RSWL>(getParamHelper(Names::Mid_High_Crossover_Freq), "Hz");
-    outGainSlider = std::make_unique<RSWL>(getParamHelper(Names::Gain_Out), "dB");
+    auto& gainInParam = getParamHelper(Names::Gain_In);
+    auto& lowMidParam = getParamHelper(Names::Low_Mid_Crossover_Freq);
+    auto& midHighParam = getParamHelper(Names::Mid_High_Crossover_Freq);
+    auto& gainOutParam = getParamHelper(Names::Gain_Out);
+    
+    inGainSlider = std::make_unique<RSWL>(gainInParam, "dB");
+    lowMidXoverSlider = std::make_unique<RSWL>(lowMidParam, "Hz");
+    midHighXoverSlider = std::make_unique<RSWL>(midHighParam, "Hz");
+    outGainSlider = std::make_unique<RSWL>(gainOutParam, "dB");
     
     auto makeAttachmentHelper = [&params, &apvts](auto& attachment,
                                                   const auto& name,
@@ -324,16 +329,16 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
     makeAttachmentHelper(outGainSliderAttachment, Names::Gain_Out, *outGainSlider);
     
     addLabelPairs(inGainSlider->labels,
-                  getParamHelper(Names::Gain_In),
+                  gainInParam,
                   "dB");
     addLabelPairs(lowMidXoverSlider->labels,
-                  getParamHelper(Names::Low_Mid_Crossover_Freq),
+                  lowMidParam,
                   "Hz");
     addLabelPairs(midHighXoverSlider->labels,
-                  getParamHelper(Names::Mid_High_Crossover_Freq),
+                  midHighParam,
                   "Hz");
     addLabelPairs(outGainSlider->labels,
-                  getParamHelper(Names::Gain_Out),
+                  gainOutParam,
                   "dB");
     
     addAndMakeVisible(*inGainSlider);
@@ -392,7 +397,7 @@ SimpleMBCompAudioProcessorEditor::SimpleMBCompAudioProcessorEditor (SimpleMBComp
     addAndMakeVisible(globalControls);
 //    addAndMakeVisible(bandControls);
     
-    setSize (600, 500);
+    setSize (650, 540);
 }
 
 SimpleMBCompAudioProcessorEditor::~SimpleMBCompAudioProcessorEditor()
