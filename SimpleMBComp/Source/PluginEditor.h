@@ -31,21 +31,21 @@ struct LookAndFeel : juce::LookAndFeel_V4
 
 struct RotarySliderWithLabels : juce::Slider
 {
-    RotarySliderWithLabels(juce::RangedAudioParameter& rap,
+    RotarySliderWithLabels(juce::RangedAudioParameter* rap,
                            const juce::String& unitSuffix,
                            const juce::String& title /*= "NO TITLE"*/) : juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
                                         juce::Slider::TextEntryBoxPosition::NoTextBox),
-    param(&rap),
+    param(rap),
     suffix(unitSuffix)
     {
         setName(title);
-        setLookAndFeel(&lnf);
+//        setLookAndFeel(&lnf);
     }
     
-    ~RotarySliderWithLabels()
-    {
-        setLookAndFeel(nullptr);
-    }
+//    ~RotarySliderWithLabels()
+//    {
+//        setLookAndFeel(nullptr);
+//    }
     
     struct LabelPos
     {
@@ -59,8 +59,10 @@ struct RotarySliderWithLabels : juce::Slider
     juce::Rectangle<int> getSliderbounds() const;
     int getTextHeight() const { return 14; }
     juce::String getDisplayString() const;
+    
+    void changeParam(juce::RangedAudioParameter* p);
 private:
-    LookAndFeel lnf;
+//    LookAndFeel lnf;
     juce::RangedAudioParameter* param;
     juce::String suffix;
 };
@@ -205,6 +207,8 @@ public:
     void resized() override;
 
 private:
+    
+    LookAndFeel lnf; // should be the first member variable that should get constructed. Hence at top
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     SimpleMBCompAudioProcessor& audioProcessor;

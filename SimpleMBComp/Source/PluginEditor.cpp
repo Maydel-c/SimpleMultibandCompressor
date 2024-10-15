@@ -401,16 +401,16 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
     auto& midHighParam = getParamHelper(Names::Mid_High_Crossover_Freq);
     auto& gainOutParam = getParamHelper(Names::Gain_Out);
     
-    inGainSlider = std::make_unique<RSWL>(gainInParam,
+    inGainSlider = std::make_unique<RSWL>(&gainInParam,
                                           "dB",
                                           "INPUT TRIM");
-    lowMidXoverSlider = std::make_unique<RSWL>(lowMidParam,
+    lowMidXoverSlider = std::make_unique<RSWL>(&lowMidParam,
                                                "Hz",
                                                "LOW-MID X-OVER");
-    midHighXoverSlider = std::make_unique<RSWL>(midHighParam,
+    midHighXoverSlider = std::make_unique<RSWL>(&midHighParam,
                                                 "Hz",
                                                 "MID-HI X-OVER");
-    outGainSlider = std::make_unique<RSWL>(gainOutParam,
+    outGainSlider = std::make_unique<RSWL>(&gainOutParam,
                                            "dB",
                                            "OUTPUT TRIM");
     
@@ -480,6 +480,7 @@ SimpleMBCompAudioProcessorEditor::SimpleMBCompAudioProcessorEditor (SimpleMBComp
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
     
+    setLookAndFeel(&lnf);
 //    addAndMakeVisible(controlBar);
 //    addAndMakeVisible(analyzer);
     addAndMakeVisible(globalControls);
@@ -490,6 +491,7 @@ SimpleMBCompAudioProcessorEditor::SimpleMBCompAudioProcessorEditor (SimpleMBComp
 
 SimpleMBCompAudioProcessorEditor::~SimpleMBCompAudioProcessorEditor()
 {
+    setLookAndFeel(nullptr);
 }
 
 //==============================================================================
