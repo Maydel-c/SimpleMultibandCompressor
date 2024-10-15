@@ -340,10 +340,11 @@ void CompressorBandControls::resized()
     flexBox.performLayout(bounds);
 }
 
-void CompressorBandControls::paint(juce::Graphics &g)
+void drawModuleBackground(juce::Graphics& g,
+                          juce::Rectangle<int> bounds)
 {
     using namespace juce;
-    auto bounds = getLocalBounds();
+//    auto bounds = getLocalBounds();
     g.setColour(Colours::blueviolet);
     g.fillAll();
     
@@ -353,7 +354,24 @@ void CompressorBandControls::paint(juce::Graphics &g)
     g.setColour(Colours::black);
     g.fillRoundedRectangle(bounds.toFloat(), 3);
     
-    g.drawRect(localBounds); // outermost rect. Adds space b/w components
+    g.drawRect(localBounds);
+}
+
+void CompressorBandControls::paint(juce::Graphics &g)
+{
+//    using namespace juce;
+    auto bounds = getLocalBounds();
+//    g.setColour(Colours::blueviolet);
+//    g.fillAll();
+//
+//    auto localBounds = bounds;
+//
+//    bounds.reduce(3, 3);
+//    g.setColour(Colours::black);
+//    g.fillRoundedRectangle(bounds.toFloat(), 3);
+//
+//    g.drawRect(localBounds); // outermost rect. Adds space b/w components
+    drawModuleBackground(g, bounds);
 }
 
 //==============================================================================
@@ -418,18 +436,19 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
 
 void GlobalControls::paint(juce::Graphics &g)
 {
-    using namespace juce;
+//    using namespace juce;
     auto bounds = getLocalBounds();
-    g.setColour(Colours::blueviolet);
-    g.fillAll();
-    
-    auto localBounds = bounds;
-    
-    bounds.reduce(3, 3);
-    g.setColour(Colours::black);
-    g.fillRoundedRectangle(bounds.toFloat(), 3);
-    
-    g.drawRect(localBounds); // outermost rect. Adds space b/w components
+//    g.setColour(Colours::blueviolet);
+//    g.fillAll();
+//
+//    auto localBounds = bounds;
+//
+//    bounds.reduce(3, 3);
+//    g.setColour(Colours::black);
+//    g.fillRoundedRectangle(bounds.toFloat(), 3);
+//
+//    g.drawRect(localBounds); // outermost rect. Adds space b/w components
+    drawModuleBackground(g, bounds);
 }
 
 void GlobalControls::resized()
