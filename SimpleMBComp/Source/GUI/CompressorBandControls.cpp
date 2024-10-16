@@ -30,16 +30,44 @@ ratioSlider(nullptr, ""/*, "RATIO"*/) // we are getting the 3rd parameter in thi
     muteButton.addListener(this);
     
     bypassButton.setName("X");
+    bypassButton.setColour(juce::TextButton::ColourIds::buttonOnColourId,
+                      juce::Colours::yellow);
+    bypassButton.setColour(juce::TextButton::ColourIds::buttonColourId,
+                      juce::Colours::black);
+    
     soloButton.setName("S");
+    bypassButton.setColour(juce::TextButton::ColourIds::buttonOnColourId,
+                      juce::Colours::limegreen);
+    bypassButton.setColour(juce::TextButton::ColourIds::buttonColourId,
+                      juce::Colours::black);
+    
     muteButton.setName("M");
+    bypassButton.setColour(juce::TextButton::ColourIds::buttonOnColourId,
+                      juce::Colours::red);
+    bypassButton.setColour(juce::TextButton::ColourIds::buttonColourId,
+                      juce::Colours::black);
     
     addAndMakeVisible(bypassButton);
     addAndMakeVisible(soloButton);
     addAndMakeVisible(muteButton);
     
     lowBand.setName("Low");
+    lowBand.setColour(juce::TextButton::ColourIds::buttonOnColourId,
+                      juce::Colours::grey);
+    lowBand.setColour(juce::TextButton::ColourIds::buttonColourId,
+                      juce::Colours::black);
+    
     midBand.setName("Mid");
+    midBand.setColour(juce::TextButton::ColourIds::buttonOnColourId,
+                      juce::Colours::grey);
+    midBand.setColour(juce::TextButton::ColourIds::buttonColourId,
+                      juce::Colours::black);
+    
     highBand.setName("High");
+    highBand.setColour(juce::TextButton::ColourIds::buttonOnColourId,
+                      juce::Colours::grey);
+    highBand.setColour(juce::TextButton::ColourIds::buttonColourId,
+                      juce::Colours::black);
     
     lowBand.setRadioGroupId(1);
     midBand.setRadioGroupId(1);
