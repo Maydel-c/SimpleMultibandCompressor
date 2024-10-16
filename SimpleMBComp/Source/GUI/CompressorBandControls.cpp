@@ -36,15 +36,15 @@ ratioSlider(nullptr, ""/*, "RATIO"*/) // we are getting the 3rd parameter in thi
                       juce::Colours::black);
     
     soloButton.setName("S");
-    bypassButton.setColour(juce::TextButton::ColourIds::buttonOnColourId,
+    soloButton.setColour(juce::TextButton::ColourIds::buttonOnColourId,
                       juce::Colours::limegreen);
-    bypassButton.setColour(juce::TextButton::ColourIds::buttonColourId,
+    soloButton.setColour(juce::TextButton::ColourIds::buttonColourId,
                       juce::Colours::black);
     
     muteButton.setName("M");
-    bypassButton.setColour(juce::TextButton::ColourIds::buttonOnColourId,
+    muteButton.setColour(juce::TextButton::ColourIds::buttonOnColourId,
                       juce::Colours::red);
-    bypassButton.setColour(juce::TextButton::ColourIds::buttonColourId,
+    muteButton.setColour(juce::TextButton::ColourIds::buttonColourId,
                       juce::Colours::black);
     
     addAndMakeVisible(bypassButton);
