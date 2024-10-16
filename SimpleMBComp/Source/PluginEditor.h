@@ -164,11 +164,16 @@ void addLabelPairs(Labels& labels, const ParamType& param, const SuffixType& suf
 }
 
 
-struct CompressorBandControls : juce::Component
+struct CompressorBandControls : juce::Component, juce::Button::Listener
 {
     CompressorBandControls(juce::AudioProcessorValueTreeState& apvts);
+    ~CompressorBandControls() override;
     void resized() override;
     void paint(juce::Graphics& g) override;
+    
+    void buttonClicked(juce::Button* button) override;
+    void updateSliderEnablements();
+    void updateSoloMuteBypassToggleStates(juce::Button& clickedButton);
 private:
     juce::AudioProcessorValueTreeState& apvts;
     
