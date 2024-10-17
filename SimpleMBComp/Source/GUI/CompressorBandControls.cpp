@@ -88,6 +88,8 @@ ratioSlider(nullptr, ""/*, "RATIO"*/) // we are getting the 3rd parameter in thi
     lowBand.setToggleState(true, juce::NotificationType::dontSendNotification);
     
     updateAttachments();
+    updateSliderEnablements();
+    updateBandSelectButtonStates();
     
     addAndMakeVisible(lowBand);
     addAndMakeVisible(midBand);
@@ -159,6 +161,83 @@ void CompressorBandControls::buttonClicked(juce::Button* button)
 {
     updateSliderEnablements();
     updateSoloMuteBypassToggleStates(*button);
+    updateActiveBandFillColors(*button);
+}
+
+void CompressorBandControls::updateActiveBandFillColors(juce::Button& clickedButton)
+{
+    jassert(activeBand != nullptr);
+    DBG( "active band: " << activeBand->getName() );
+    
+    if(clickedButton.getToggleState() == false)
+    {
+        resetActiveBandColors();
+    } else
+    {
+        refreshBandButtonColors(*activeBand, clickedButton);
+    }
+}
+
+void CompressorBandControls::refreshBandButtonColors(juce::Button& band, juce::Button& colorSource)
+{
+    // copy colour from colour source (one of solo/mute/bypass) and set it to band buttonOnColourId
+    band.setColour(juce::TextButton::ColourIds::buttonOnColourId,
+                   colorSource.findColour(juce::TextButton::ColourIds::buttonOnColourId));
+    
+    // we want the colour to persist when we select a different band, button off color which is on Id - buttonColourId - right now, buttonColourId gets triggered whenever band changes, we want whatever the colour is now (if it was changed by solo/bypass/mute) to persist whenever we switch bands. setting current button-off-color-id to button-on-color-id of source
+    band.setColour(juce::TextButton::ColourIds::buttonColourId,
+                   colorSource.findColour(juce::TextButton::ColourIds::buttonOnColourId));
+    repaint();
+}
+
+void CompressorBandControls::resetActiveBandColors()
+{
+    activeBand->setColour(juce::TextButton::ColourIds::buttonOnColourId,
+                          juce::Colours::grey);
+    activeBand->setColour(juce::TextButton::ColourIds::buttonOnColourId,
+                          juce::Colours::black);
+    repaint();
+}
+
+void CompressorBandControls::updateBandSelectButtonStates()
+{
+    using namespace Params;
+    std::vector<std::array<Names, 3>> paramsToCheck
+    {
+        {Names::Solo_Low_Band, Names::Mute_Low_Band, Names::Bypass_Low_Band},
+        {Names::Solo_Mid_Band, Names::Mute_Mid_Band, Names::Bypass_Mid_Band},
+        {Names::Solo_High_Band, Names::Mute_High_Band, Names::Bypass_High_Band}
+    };
+    
+    const auto& params = GetParams();
+    auto paramHelper = [&params, this](const auto& name)
+    {
+        return dynamic_cast<juce::AudioParameterBool*>(&getParam(apvts, params, name));
+    };
+    
+    for(size_t i=0; i < paramsToCheck.size(); ++i)
+    {
+        auto& list = paramsToCheck[i];
+        auto* bandButton =  (i == 0) ? &lowBand :
+                            (i == 1) ? &midBand :
+                            &highBand; // check which band you're working on
+    
+        if( auto* solo = paramHelper(list[0]);
+           solo->get() )
+        {
+            refreshBandButtonColors(*bandButton, soloButton);
+        }
+        else if( auto* mute = paramHelper(list[1]);
+                mute->get() )
+        {
+            refreshBandButtonColors(*bandButton, muteButton);
+        }
+        else if ( auto* bypass = paramHelper(list[2]);
+                 bypass->get() )
+        {
+            refreshBandButtonColors(*bandButton, bypassButton);
+        }
+    }
 }
 
 void CompressorBandControls::updateSliderEnablements()
@@ -236,6 +315,7 @@ void CompressorBandControls::updateAttachments()
                 Names::Mute_Low_Band,
                 Names::Bypass_Low_Band
             };
+            activeBand = &lowBand;
             break;
         }
         case Mid:
@@ -250,6 +330,7 @@ void CompressorBandControls::updateAttachments()
                 Names::Mute_Mid_Band,
                 Names::Bypass_Mid_Band
             };
+            activeBand=&midBand;
             break;
         }
         case High:
@@ -264,6 +345,7 @@ void CompressorBandControls::updateAttachments()
                 Names::Mute_High_Band,
                 Names::Bypass_High_Band
             };
+            activeBand=&highBand;
             break;
         }
     }

@@ -21,8 +21,6 @@ struct CompressorBandControls : juce::Component, juce::Button::Listener
     void paint(juce::Graphics& g) override;
     
     void buttonClicked(juce::Button* button) override;
-    void updateSliderEnablements();
-    void updateSoloMuteBypassToggleStates(juce::Button& clickedButton);
 private:
     juce::AudioProcessorValueTreeState& apvts;
     
@@ -47,5 +45,15 @@ private:
     
     juce::Component::SafePointer<CompressorBandControls> safePtr {this};
     
+    juce::ToggleButton* activeBand = &lowBand;
+    
     void updateAttachments();
+    void updateSliderEnablements();
+    void updateSoloMuteBypassToggleStates(juce::Button& clickedButton);
+    void updateActiveBandFillColors(juce::Button& clickedButton);
+    
+    void resetActiveBandColors();
+    void refreshBandButtonColors(juce::Button& band, juce::Button& colorSource);
+    void updateBandSelectButtonStates();
+    
 };
